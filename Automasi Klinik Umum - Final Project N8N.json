@@ -1,0 +1,225 @@
+{
+  "name": "Klinik Umum - Final Project",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json['Nama Pasien'] }} {{ $json['Usia Pasien'] }} {{ $json['Nomor Telepon / WhatsApp'] }} {{ $json['Keluhan Utama / Gejala'] }} {{ $json['Tanggal Kunjungan'] }}",
+        "options": {
+          "systemMessage": "Kamu adalah asisten AI medis profesional dan cerdas untuk sistem pendaftaran di sebuah klinik umum.\n\nTUGAS UTAMA:\n\n1. PENGELOLAAN NOMOR ANTREAN:\n   - Kamu bertugas menentukan nomor urut antrean secara berurutan (misal: 1, 2, 3, dst.) berdasarkan riwayat memori/sesi pendaftaran.\n   - Wajib menyertakan Nomor Urut Antrean secara tegas pada pesan untuk Dokter DAN pesan untuk Pasien.\n\n2. ANALISIS DATA PASIEN:\n   - Analisis data mentah pasien yang masuk langsung dari Google Form/Google Sheets Trigger (nama, umur, keluhan utama, nomor telepon, tanggal kunjungan).\n   - Tentukan tingkat urgensi pasien dengan melabelinya secara tegas di awal teks: [DARURAT], [SEDANG], atau [RINGAN].\n   - Buat ringkasan keluhan medis yang padat, jelas, dan mudah dipahami oleh dokter umum.\n\n3. PENGOLAHAN DATA DARI TAB UTAMA:\n   - Fokus hanya pada membaca dan mengolah data mentah pasien dari pemicu Google Form.\n   - JANGAN menyimpan atau memasukkan ulang data ke tabel/sheet mana pun agar tidak terjadi duplikasi data.\n\n4. FORMAT OUTPUT DUA BOT (DOKTER & PASIEN):\n   Kamu HARUS menghasilkan dua format pesan yang terpisah dengan pembatas khusus ===PEMBATAS=== agar bisa dibaca oleh sistem downstream n8n.\n\n   [PESAN UNTUK BOT DOKTER]\n   - Awali dengan label urgensi: [DARURAT], [SEDANG], atau [RINGAN].\n   - Wajib tampilkan Nomor Urut Antrean.\n   - Sertakan Nama, Usia, Nomor Telepon, dan Tanggal Kunjungan.\n   - Sertakan Ringkasan Keluhan Medis yang padat dan jelas untuk dokter umum.\n\n   ===PEMBATAS===\n\n   [PESAN UNTUK BOT PASIEN]\n   - Gunakan bahasa yang ramah, sopan, dan menenangkan.\n   - Berikan konfirmasi pendaftaran berhasil.\n   - Wajib tampilkan Nomor Urut Antrean pasien secara jelas.\n   - Sertakan Nama, Tanggal Kunjungan, dan Keluhan.\n   - Jika status [DARURAT], instruksikan pasien untuk segera menuju ruang IGD/penanganan khusus.\n   - Jika status [SEDANG] atau [RINGAN], minta pasien menunggu panggilan sesuai nomor urut antrean.\n\nATURAN FORMAT OUTPUT (SANGAT PENTING):\n- JANGAN GUNAKAN FORMAT MARKDOWN APA PUN (Dilarang keras menggunakan tanda pagar #, tanda bintang ganda **, kode blok ```, dll).\n- Gunakan teks polos (plain text) murni dengan baris baru (enter) biasa untuk merapikan tampilan.\n- Pastikan kata ===PEMBATAS=== ditulis tepat seperti itu di antara pesan Dokter dan Pasien."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -112,
+        -48
+      ],
+      "id": "71fad877-2c74-42b8-bd6f-bd8ab4822df4",
+      "name": "Asisten Pintar Pengolah Data Pasien",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        -112,
+        144
+      ],
+      "id": "a2aee5b7-2dc8-422c-a7fe-362fd5bcd5a2",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZnWH7biy0U1OoC9D",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Background Masalah :\nSistem pendaftaran pasien yang masih manual sering menyebabkan antrean panjang dan menumpuknya dokumen kertas. Selain itu, potensi kehilangan data atau kerusakan fisik pada dokumen catatan sangat tinggi.\n\nKenapa layak di Otomasi :\nOtomasi ini memungkinkan data pasien dari Google Forms langsung tercatat di Google Spreadsheet dan diolah secara real-time. Dengan bantuan AI dan bot Telegram, notifikasi antrean serta informasi medis dapat tersampaikan secara otomatis dan akurat.\n",
+        "height": 400
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        -160
+      ],
+      "id": "97cafdfa-394e-41a9-83e5-61b29e422c4d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": []
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "16jJM_s9flG0Dprc21-PFX1nRC4kVAJvrrW2vFTXvOW8",
+          "mode": "list",
+          "cachedResultName": "Formulir Data Pasien (Jawaban)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16jJM_s9flG0Dprc21-PFX1nRC4kVAJvrrW2vFTXvOW8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1548406223,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/16jJM_s9flG0Dprc21-PFX1nRC4kVAJvrrW2vFTXvOW8/edit#gid=1548406223"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        -48
+      ],
+      "id": "ce1fbce3-6dcb-437e-8c9d-aeb849a5294e",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "4tM2lzbNwG8qYJhB",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "7557042227",
+        "text": "={{ $json.output.split('===PEMBATAS===')[0].trim() }}",
+        "additionalFields": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        -160
+      ],
+      "id": "114caf73-5c1e-45fe-bd24-f605efd690dd",
+      "name": "Asisten dokter",
+      "webhookId": "cb8596d6-b49b-4d3a-ac09-4867a18164f3",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "mwpVnfrVoTBE1kWR",
+          "name": "Asisten Klinik"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "7557042227",
+        "text": "={{ $json.output.split('===PEMBATAS===')[1].trim() }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        48
+      ],
+      "id": "b9fc0f63-0eb6-4cb7-a5b2-296083f640a7",
+      "name": "Asisten Pasien",
+      "webhookId": "24a0822b-cb6c-4854-9a9b-f052cacde867",
+      "credentials": {
+        "telegramApi": {
+          "id": "HcMq3Y4UCNCM4iTL",
+          "name": "Asisten_pasien"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $execution.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        32,
+        144
+      ],
+      "id": "540f6118-8dd7-4c0b-b9a5-f8b6331cf844",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Asisten Pintar Pengolah Data Pasien",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Asisten Pintar Pengolah Data Pasien": {
+      "main": [
+        [
+          {
+            "node": "Asisten dokter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Asisten Pasien",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Asisten Pintar Pengolah Data Pasien",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Asisten dokter": {
+      "main": [
+        []
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Asisten Pintar Pengolah Data Pasien",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ad56eade-c5ba-44b7-a53e-157abed6cdf5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "56fa3db0b28c25e138da623c46cbde978200c122eacaeee9169fdb64be505012"
+  },
+  "nodeGroups": [],
+  "id": "1oETrwrPRWGyvV6c",
+  "tags": []
+}
